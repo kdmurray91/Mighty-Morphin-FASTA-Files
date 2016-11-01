@@ -3,8 +3,8 @@ from Bio import SeqRecord
 from Bio.Seq import MutableSeq
 from copy import copy, deepcopy
 
-
 def mmff_reverse(seq):
+    '''Reverses sequence nucleotides'''
     # Keep all attributes from original
     new_seq = deepcopy(seq)
     mmff_seq = new_seq.seq.tomutable()
@@ -14,4 +14,5 @@ def mmff_reverse(seq):
 
 
 def mmff_passthrough(seq):
+    '''Does nothing'''
     return seq

@@ -1,10 +1,10 @@
 from __future__ import print_function
-from argparse import ArgumentParser,FileType
+from argparse import ArgumentParser, FileType
 from math import floor
 import sys
 from Bio import SeqIO
 import pkg_resources
-from morphs.morphs_singles import mmff_reverse,mmff_passthrough
+from morphs import MORPHS
 
 
 EXIT_FILE_IO_ERROR = 1
@@ -39,11 +39,13 @@ def parse_args():
     '''
     parser = ArgumentParser(description='Create metamorphic tests of FASTA files')
 
+    parser.add_argument('--list-morphs', action='store_true',
+                        help='List available metamorphic tests.')
+
     parser.add_argument('--morphs',
                         nargs='+',
                         type=str,
-                        help='Metamorphic tests to create.'
-)
+                        help='Metamorphic tests to create.')
 
     parser.add_argument('--version',
                         action='version',
@@ -62,8 +64,6 @@ def parse_args():
     return parser.parse_args()
 
 
-
-
 def mmff_from_file(fasta_file, morphs):
     '''Compute a metamorphic tests files from an input FASTA file.
     Arguments:
@@ -72,18 +72,13 @@ def mmff_from_file(fasta_file, morphs):
     Result:
        tbc
     '''
-
-    morphs_dict={
-    'reverse':mmff_reverse,
-    "passthrough": mmff_passthrough
-    }
-    morphed_sequences= []
+    morphed_sequences = []
 
     for seq in SeqIO.parse(fasta_file, "fasta"):
         for morph in morphs:
-            #print("morph "+str(morphs_dict[morph])+" on "+seq.id)
-            morphed_sequences.append(morphs_dict[morph](seq))
+            morphed_sequences.append(MORPHS[morph](seq))
     return morphed_sequences
+
 
 def process_files(options):
     '''Compute and save MR for each input FASTA file specified on the
@@ -96,7 +91,6 @@ def process_files(options):
     '''
 
     morph_list = ["passthrough"] + options.morphs
-    #print(morph_list)
     if options.fasta_files:
         for fasta_filename in options.fasta_files:
             try:
@@ -114,10 +108,17 @@ def process_files(options):
         print("STDIN not supported yet")
 
 
+def list_morphs():
+    print("Available morphs are:")
+    for morph, fn in MORPHS.items():
+        print("  -", morph, "--", fn.__doc__)
+
+
 def main():
     "Mighty Morphin FASTA files - go go!"
     options = parse_args()
-    #print(options)
+    if options.list_morphs:
+        return list_morphs()
     process_files(options)
 
 
